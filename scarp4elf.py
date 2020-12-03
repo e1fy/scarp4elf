@@ -3,24 +3,24 @@ import re
 headers = {"User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36"}
 def scarp_alpha_coders(key):
     #regexes and setup
+    if(" " in key):
+        key = key.replace(" ","+")
     url = f"https://wall.alphacoders.com/search.php?search={key}"
     regex_recon = r"center title'>(.*)<\/h1>"
-    regex_recon_pages = r"<input type=.text. class=.form-control. placeholder=.Page # \/ (\d+).>"
+    regex_recon_pages = r"<li><a.*page=(\d+).*<\/a><\/li>"
     regex_images = r"boxgrid.>\n*.*a href=.(.*).title"
     regex_get_image_url = r"main-content.*(https.*)."
     regex_name = r"https:.*\/(.+)"
     #recon
     recon = requests.get(url,headers=headers)
     recon_source = recon.text
-    recon_source=recon_source.replace("\n","")
+    recon_source = recon_source.replace("\n","")
     #results
     recon_resault_images = re.findall(regex_recon,recon_source)
     recon_resault_pages = re.findall(regex_recon_pages,recon_source)
+    recon_resault_pages = list(dict.fromkeys(recon_resault_pages))
     pages = recon_resault_pages[0]
     print(f"{recon_resault_images[0]} {pages} pages - alphacoders")
-    #fixing
-    if(" " in key):
-        key = key.replace(" ","+")
     #scarping
     for i in range(1,int(pages)+1):
         request = requests.get(f"https://wall.alphacoders.com/search.php?search={key}&page={str(i)}",headers=headers)
@@ -36,7 +36,7 @@ def scarp_alpha_coders(key):
                 f.write(requests.get(name,headers=headers).content)
             print(f"[+] downloaded - {name}")
 def main():
-    keyword = "zero two" #character goes here
+    keyword = "owari no seraph" #character goes here
     scarp_alpha_coders(keyword)
 if __name__ == "__main__":
     main()
