@@ -29,11 +29,7 @@ def scarp_alpha_coders(key):
         pages = recon_resault_pages[0]
         print(f"{recon_resault_images[0]} {pages} pages - alphacoders")
         for i in range(1,int(pages)+1):
-            request = requests.get(f"https://wall.alphacoders.com/search.php?search={key}&page={str(i)}",headers=headers)
-            source_code = request.text
-            regex_resault_images_match = re.findall(alphacoders_regex_images,source_code)
-            for ids in regex_resault_images_match:
-                get_by_id(ids)
+            download_single_page(f"https://wall.alphacoders.com/search.php?search={key}&page={str(i)}")
     return 0
 def get_by_id(ids):
     get_id_page = requests.get(f"https://wall.alphacoders.com/{ids}",headers=headers)
@@ -52,7 +48,7 @@ def download(file_name,file_url):
             print("[!]keyboard interrupt")
             os.close()
 def main():
-    keyword = "arch linux"
+    keyword = "zero two"
     scarp_alpha_coders(keyword)
     print("done")
 if __name__ == "__main__":
