@@ -50,7 +50,7 @@ def download(file_name,file_url):
     except KeyboardInterrupt:
             os.remove(file_name)
             print("[!]keyboard interrupt")
-            os.close()
+            exit()
 def main():
     if(len(arguments)==1):
         exit()
