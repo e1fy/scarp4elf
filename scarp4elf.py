@@ -4,10 +4,10 @@ import requests
 import re
 import os
 alphacoders_regex_recon = r"center title'>(.*)<\/h1>"
-alphacoders_regex_recon_pages = r"<li><a.*page=(\d+).*<\/a><\/li>"
 alphacoders_regex_images = r"boxgrid.>\n*.*a href=.(.*).title"
 alphacoders_regex_get_image_url = r"main-content.*(https.*)."
 alphacoders_regex_name = r"https:.*\/(.+)"
+alphacoders_regex_determine = r"(\d+).*Wallpapers"
 headers = {"User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.66 Safari/537.36"}
 def download_single_page(url):
     request = requests.get(url,headers=headers)
@@ -23,15 +23,15 @@ def scarp_alpha_coders(key):
     recon_source = recon.text
     recon_source = recon_source.replace("\n","")
     recon_resault_images = re.findall(alphacoders_regex_recon,recon_source)
-    recon_resault_pages = re.findall(alphacoders_regex_recon_pages,recon_source)
-    recon_resault_pages = list(dict.fromkeys(recon_resault_pages))
-    if(len(recon_resault_pages)==0):
-        download_single_page(url)
+    recon_resault_fixed_images = re.findall(alphacoders_regex_determine,recon_resault_images[0])
+    number_of_images = recon_resault_fixed_images[0]
+    pages_check = int(number_of_images) % 30
+    if(pages_check==0):
+        pages = int(number_of_images) / 30
     else:
-        pages = recon_resault_pages[0]
-        print(f"{recon_resault_images[0]} {pages} pages - alphacoders")
-        for i in range(1,int(pages)+1):
-            download_single_page(f"https://wall.alphacoders.com/search.php?search={key}&page={str(i)}")
+        pages = int(number_of_images) / 30 + 1
+    for i in range(1,int(pages)):
+        download_single_page(f"https://wall.alphacoders.com/search.php?search={key}&page={str(i)}")
     return 0
 def get_by_id(ids):
     get_id_page = requests.get(f"https://wall.alphacoders.com/{ids}",headers=headers)
@@ -47,6 +47,7 @@ def download(file_name,file_url):
             print(f"[+] downloaded - {file_name}")
     except KeyboardInterrupt:
             os.remove(file_name)
+            print("[!]keyboard interrupt")
             exit()
 def main():
     if(len(arguments)==1):
