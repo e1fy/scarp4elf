@@ -3,6 +3,9 @@ from sys import exit
 import requests
 import re
 import os
+zerochan_regex_number_pages = r"page \d .+ (\d+).+<a"
+zerochan_regex_get_static = r'.*href="(https|http....static.+?)"><'
+zerochan_get_image_name = r"full.(\d+.+)"
 alphacoders_regex_recon = r"center title'>(.*)<\/h1>"
 alphacoders_regex_images = r"boxgrid.>\n*.*a href=.(.*).title"
 alphacoders_regex_get_image_url = r"main-content.*(https.*)."
@@ -18,6 +21,22 @@ def download(file_name,file_url):
             os.remove(file_name)
             print("[!]keyboard interrupt")
             exit()
+def zero_chan_recon(key):
+    key = alpha_coders_fix_key(key)
+    url = "https://www.zerochan.net/"
+    recon_first_request = requests.get(f"{url}search?q={key}",headers=headers)
+    recon_url = recon_first_request.url
+    recon_number_of_pages = re.findall(zerochan_regex_number_pages,recon_first_request.text)
+    number_of_pages = recon_number_of_pages[0]
+    return(recon_url,number_of_pages)
+def zero_chan_scarp(url,pages):
+    for i in range(1,int(pages)):
+        first_request = requests.get(f"{url}?p={i}",headers=headers)
+        images = re.findall(zerochan_regex_get_static,first_request.text)
+        for image in images:
+            print(image)
+            image_name = re.findall(zerochan_get_image_name,image)
+            download(image_name[0],image)
 def alpha_coders_download_single_page(url):
     request = requests.get(url,headers=headers)
     source_code = request.text
@@ -65,6 +84,9 @@ def main():
         exit()
     else:
         keyword = " ".join(arguments[1:])
+    zerochan_url,zerochan_number_pages = zero_chan_recon(keyword)
+    print(f"{str(zerochan_number_pages)} - pages found on zerochan")
+    zero_chan_scarp(zerochan_url,int(zerochan_number_pages))
     number_of_images,pages_check = alpha_coders_recon(keyword)
     print(f"{str(number_of_images)} - {str(pages_check)} ")
     scarp_alpha_coders(keyword,number_of_images,pages_check)
